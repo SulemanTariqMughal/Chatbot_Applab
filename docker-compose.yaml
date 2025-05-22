@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Service for your Flask application
+  app:
+    build:
+      context: . # Build the image from the Dockerfile in the current directory
+      dockerfile: Dockerfile # Specify the Dockerfile name
+    ports:
+      - "5001:5000" # Map host port 5001 to container port 5000 (assuming you want to use 5001 on your host)
+    environment:
+      FLASK_APP: app.py  # Specifies the main Flask application file
+      # FLASK_RUN_HOST: 0.0.0.0 # This is redundant if you specify --host in the command
+    command: ["python", "-m", "flask", "run", "--host", "0.0.0.0", "--port", "5000"] # Command to run the Flask app
+    depends_on:
+      - ollama-service # Ensure ollama-service starts before the app
+    networks:
+      - app-network
+    # If you want to persist the uploads directory outside the container for debugging,
+    # you can uncomment this. However, app.py removes files after processing.
+    volumes:
+      - .:/app # Mount your current directory into the container to see code changes without rebuilding
+
+  # Service for Ollama
+  ollama-service:
+    image: ollama/ollama:latest # Use the official Ollama Docker image
+    ports:
+      - "11434:11434" # Expose Ollama's default port on host, useful for direct interaction if needed
+    volumes:
+      - ollama_data:/root/.ollama # Persist Ollama models and data
+    environment:
+      # Important: Tell Ollama to listen on all network interfaces within its container
+      OLLAMA_HOST: 0.0.0.0
+    command: ["serve"] # Command to start the Ollama server
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge # Define a custom bridge network for services to communicate
+
+volumes:
+  ollama_data: # Define a named volume for Ollama data persistence

@@ -1,0 +1,9 @@
+langchain
+langchain-community
+unstructured
+openai
+PyPDF2
+ollama
+chromadb
+unstructured[pdf]
+Flask

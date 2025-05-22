@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+env/
+venv/
+*.venv/
+pip-log.txt
+pip-delete-this-arg.txt
+.tox/
+.coverage
+.coverage.*
+.ipynb_checkpoints
+.pytest_cache/
+
+# Docker
+*.log # General log files
+!Dockerfile # Don't ignore the Dockerfile itself
+!docker-compose.yaml # Don't ignore docker-compose.yaml itself
+
+instance/
+.flaskenv
+
+uploads/
+
+.vscode/
+
+# Operating System Files
+.DS_Store
+Thumbs.db 
