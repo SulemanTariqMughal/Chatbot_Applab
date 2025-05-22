@@ -116,11 +116,13 @@ Request (POST - PDF Upload & Question):
 Form Data (multipart/form-data):
 pdf_file: The PDF file to upload.
 question: The question string related to the PDF content.
+
 Response:
 GET: Renders the index.html template.
 POST: Redirects back to the main page (/) after processing, displaying the chatbot's response.
 HTTP 200 OK: Successful processing and response.
 HTTP 500 Internal Server Error: An error occurred during PDF processing or LLM interaction.
+
 Project Structure
 ChatbotApplab/
 ├── app.py                  # Main Flask application logic
@@ -130,9 +132,17 @@ ChatbotApplab/
 ├── docker-compose.yaml     # Defines and configures multi-container Docker application
 └── uploads/                # Directory for temporary PDF storage (created by Dockerfile)
 └── README.md               # This documentation file
+
+
 Troubleshooting
 libGL.so.1: cannot open shared object file error: This indicates missing system-level graphics libraries. Ensure libgl1-mesa-glx and poppler-utils (and potentially tesseract-ocr) are correctly installed in your Dockerfile via apt-get install. Remember to docker compose up --build after modifying the Dockerfile.
+
 flask: executable file not found or python -m flask not found: Ensure Flask is in your requirements.txt and you've run docker compose up --build to re-install Python dependencies.
+
 Ollama models not found / download errors: Verify the ollama-service container is running (docker ps) and that you've pulled the mistral and nomic-embed-text models as described in the Ollama Model Download section. Check Ollama container logs for more details.
-500 Internal Server Error on /upload_pdf after libGL.so.1 fix: This often points to issues with unstructured not having its full dependencies for PDF parsing. Ensure unstructured[pdf] is in your requirements.txt and rebuild. Also, consider adding tesseract-ocr to your Dockerfile for scanned PDFs.
+
+500 Internal Server Error on /upload_pdf after libGL.so.1 fix: This often points to issues with unstructured not having its full dependencies for PDF parsing. 
+
+Ensure unstructured[pdf] is in your requirements.txt and rebuild. Also, consider adding tesseract-ocr to your Dockerfile for scanned PDFs.
+
 "Error processing PDF" in UI: Check the terminal logs of the app-1 container for the detailed Python traceback, which will pinpoint the exact line of code causing the issue.
