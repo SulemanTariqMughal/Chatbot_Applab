@@ -61,9 +61,9 @@ These instructions will guide you through setting up and running the LangChain P
 
 First, clone this repository to your local machine:
 
-```bash
-git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-cd your-repo-name # Replace with your actual repository name (e.g., ChatbotApplab)
+````bash
+git clone https://github.com/SulemanTariqMughal/Chatbot_Applab.git
+cd ChatbotApplab
 Running with Docker Compose
 
 Navigate to the root directory of the cloned project (where docker-compose.yaml and Dockerfile are located).
