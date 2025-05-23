@@ -1,245 +1,3 @@
-<!-- <!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>LangChain PDF Chatbot</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a; /* Dark background */
-            color: #e2e8f0; /* Light text */
-        }
-
-        header {
-            background-color: #1e293b; /* Navy black */
-            padding: 20px;
-            text-align: center;
-            color: #60a5fa;
-            font-size: 2em;
-            border-bottom: 2px solid #3b82f6;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            background-color: #1e293b;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #3b82f6;
-        }
-
-        label {
-            font-weight: bold;
-            color: #93c5fd;
-        }
-
-        input[type="file"],
-        textarea {
-            width: 100%;
-            margin: 10px 0 20px;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #334155;
-            color: #e2e8f0;
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        button { /* Changed input type="submit" to button for better JS control */
-            background-color: #3b82f6;
-            color: #fff;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 10px; /* Added some margin */
-        }
-
-        button:hover {
-            background-color: #2563eb;
-        }
-
-        #response-box { /* Added ID for JS targeting */
-            background-color: #0f172a;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 30px;
-            border: 1px solid #3b82f6;
-        }
-
-        h2 {
-            color: #60a5fa;
-        }
-
-        a {
-            color: #3b82f6;
-        }
-
-        #loading-spinner {
-            display: none; /* Hidden by default */
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid #3b82f6;
-            width: 30px;
-            height: 30px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        /* Safari */
-        @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); }
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        LangChain PDF Chatbot
-    </header>
-
-    <div class="container">
-        <form id="pdf-upload-form" enctype="multipart/form-data">
-            <label for="pdf_file">Upload a PDF:</label>
-            <input type="file" name="pdf_file" id="pdf_file" accept=".pdf" required>
-            <button type="submit" id="upload-button">Upload PDF</button>
-        </form>
-
-        <hr style="margin: 30px 0; border-color: #334155;">
-
-        <form id="question-form">
-            <input type="hidden" id="session_id" value=""> <label for="question">Ask a Question:</label>
-            <textarea name="question" id="question" rows="4" placeholder="e.g. What is this document about?" required></textarea>
-            <button type="submit" id="ask-button" disabled>Ask Question</button> </form>
-
-        <div id="loading-spinner"></div>
-
-        <div id="response-box" class="hidden">
-            <h2 id="your-question-heading">Your Question:</h2>
-            <p id="display-question"></p>
-
-            <h2>Response:</h2>
-            <p id="display-response"></p>
-        </div>
-    </div>
-
-    <script>
-        const pdfUploadForm = document.getElementById('pdf-upload-form');
-        const questionForm = document.getElementById('question-form');
-        const pdfFileInput = document.getElementById('pdf_file');
-        const questionInput = document.getElementById('question');
-        const uploadButton = document.getElementById('upload-button');
-        const askButton = document.getElementById('ask-button');
-        const sessionIdInput = document.getElementById('session_id');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const responseBox = document.getElementById('response-box');
-        const displayQuestion = document.getElementById('display-question');
-        const displayResponse = document.getElementById('display-response');
-
-        // Handle PDF upload
-        pdfUploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevent default form submission
-
-            const formData = new FormData();
-            formData.append('pdf_file', pdfFileInput.files[0]);
-
-            uploadButton.disabled = true;
-            uploadButton.textContent = 'Uploading & Processing...';
-            loadingSpinner.style.display = 'block'; // Show spinner
-
-            try {
-                const response = await fetch('/upload_pdf', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    sessionIdInput.value = data.session_id; // Store the session ID
-                    alert(data.message);
-                    askButton.disabled = false; // Enable question asking
-                    pdfFileInput.disabled = true; // Disable PDF input after upload
-                    uploadButton.textContent = 'PDF Uploaded';
-                } else {
-                    alert('Error: ' + data.error);
-                    uploadButton.textContent = 'Upload PDF';
-                }
-            } catch (error) {
-                console.error('Network or server error:', error);
-                alert('An error occurred during PDF upload. Please try again.');
-                uploadButton.textContent = 'Upload PDF';
-            } finally {
-                uploadButton.disabled = false;
-                loadingSpinner.style.display = 'none'; // Hide spinner
-            }
-        });
-
-        // Handle question submission
-        questionForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevent default form submission
-
-            const question = questionInput.value;
-            const sessionId = sessionIdInput.value;
-
-            if (!sessionId) {
-                alert('Please upload a PDF first.');
-                return;
-            }
-
-            askButton.disabled = true;
-            askButton.textContent = 'Thinking...';
-            loadingSpinner.style.display = 'block'; // Show spinner
-            responseBox.classList.add('hidden'); // Hide previous response
-
-            try {
-                const response = await fetch('/ask_question', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ question: question, session_id: sessionId })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    displayQuestion.textContent = question;
-                    displayResponse.textContent = data.answer;
-                    responseBox.classList.remove('hidden'); // Show response box
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Network or server error:', error);
-                alert('An error occurred while getting the answer. Please try again.');
-            } finally {
-                askButton.disabled = false;
-                askButton.textContent = 'Ask Question';
-                loadingSpinner.style.display = 'none'; // Hide spinner
-            }
-        });
-    </script>
-</body>
-</html>
- -->
-
  <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -291,7 +49,7 @@
             resize: vertical;
         }
 
-        button { /* Changed input type="submit" to button for better JS control */
+        button {
             background-color: #3b82f6;
             color: #fff;
             padding: 12px 25px;
@@ -307,7 +65,7 @@
             background-color: #2563eb;
         }
 
-        #response-box { /* Added ID for JS targeting */
+        #response-box {
             background-color: #0f172a;
             padding: 20px;
             border-radius: 10px;
@@ -330,12 +88,11 @@
             border-top: 4px solid #3b82f6;
             width: 30px;
             height: 30px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
+            -webkit-animation: spin 1s linear infinite; 
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
 
-        /* Safari */
         @-webkit-keyframes spin {
             0% { -webkit-transform: rotate(0deg); }
             100% { -webkit-transform: rotate(360deg); }
